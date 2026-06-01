@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lev B2B — Análise de Crédito</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gd:#0F5A3F;--gm:#1D9E75;--gl:#8DC15A;--gp:#EAF3DE;
+  --ab:#FAEEDA;--at:#854F0B;--rb:#FCEBEB;--rt:#A32D2D;
+  --bb:#E6F1FB;--bt:#185FA5;
+  --br:rgba(0,0,0,0.08);--bm:rgba(0,0,0,0.13);
+  --bg:#F7F7F5;--sf:#FFFFFF;--tx:#1A1A1A;--mu:#6B6B6B;--fa:#AAAAAA;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px}
+
+/* LOGIN */
+.lw{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.lc{background:var(--sf);border:1px solid var(--br);border-radius:16px;padding:2.5rem 2rem;width:360px;box-shadow:0 8px 40px rgba(0,0,0,0.08)}
+.ll{display:flex;align-items:center;gap:10px;margin-bottom:2rem;justify-content:center}
+.llm{width:36px;height:36px;background:var(--gd);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--gl);font-weight:700;font-size:16px}
+.llt{font-size:17px;font-weight:600}
+.ls{text-align:center;font-size:13px;color:var(--mu);margin-bottom:1.5rem}
+.pb{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.pbtn{padding:10px;border:2px solid var(--bm);border-radius:10px;background:none;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;color:var(--mu);transition:all .15s}
+.pbtn.active{border-color:var(--gd);background:var(--gp);color:var(--gd)}
+.lf{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem}
+.lf label{font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
+.lf input{height:40px;border:1px solid var(--bm);border-radius:8px;padding:0 12px;font-family:inherit;font-size:14px;outline:none}
+.lf input:focus{border-color:var(--gm)}
+.lerr{font-size:12px;color:var(--rt);text-align:center;margin-bottom:.75rem;min-height:16px}
+.lbln{width:100%;height:42px;background:var(--gd);color:white;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.lbln:hover{background:#0a3d2b}
+
+/* HEADER */
+header{background:var(--gd);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px;color:white;font-size:15px;font-weight:600}
+.lmk{width:28px;height:28px;background:var(--gl);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gd)}
+.hr{display:flex;align-items:center;gap:12px}
+.pbadge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px}
+.pbadge.b2b{background:var(--gl);color:var(--gd)}
+.pbadge.fin{background:#FFD580;color:#7A5800}
+.blg{font-size:12px;color:rgba(255,255,255,.6);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px}
+.blg:hover{color:white;background:rgba(255,255,255,.1)}
+
+/* CONTAINER */
+.ct{max-width:1280px;margin:0 auto;padding:1.5rem 2rem}
+
+/* LIMITE GLOBAL */
+.lg{background:var(--sf);border:1px solid var(--br);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.lgl{font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.lgv{display:flex;gap:2rem;flex-wrap:wrap}
+.lgi{display:flex;flex-direction:column;gap:2px}
+.lgn{font-size:18px;font-weight:600}
+.lgs{font-size:11px;color:var(--fa)}
+.lgbw{flex:1;min-width:200px}
+.lgbt{height:8px;background:var(--br);border-radius:99px;overflow:hidden;margin-top:4px}
+.lgbf{height:100%;border-radius:99px;transition:width .4s,background .4s}
+
+/* METRICS */
+.mx{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem}
+.mc{background:var(--sf);border:1px solid var(--br);border-radius:12px;padding:1rem 1.25rem;position:relative;overflow:hidden}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gm);border-radius:12px 12px 0 0}
+.mc.warn::before{background:#EF9F27}
+.mc.danger::before{background:#E24B4A}
+.mc.neutral::before{background:#888780}
+.ml{font-size:11px;color:var(--mu);margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.mv{font-size:26px;font-weight:600;line-height:1}
+.ms{font-size:11px;color:var(--fa);margin-top:3px}
+
+/* TOOLBAR */
+.tb{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.tb input[type=text]{flex:1;min-width:200px;height:38px;border:1px solid var(--bm);border-radius:8px;padding:0 12px 0 36px;font-family:inherit;font-size:13px;background:var(--sf);outline:none}
+.tb input[type=text]:focus{border-color:var(--gm)}
+.sw{position:relative;flex:1;min-width:200px}
+.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--fa);font-size:15px;pointer-events:none}
+.tb select{height:38px;border:1px solid var(--bm);border-radius:8px;padding:0 10px;font-family:inherit;font-size:13px;background:var(--sf);outline:none;cursor:pointer}
+.bp{height:38px;padding:0 16px;background:var(--gd);color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.bp:hover{background:#0a3d2b}
+.bs{height:38px;padding:0 14px;background:var(--sf);color:var(--tx);border:1px solid var(--bm);border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.bs:hover{background:var(--bg)}
+
+/* TABLE */
+.tc{background:var(--sf);border:1px solid var(--br);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:#FAFAF8;border-bottom:1px solid var(--br)}
+th{padding:10px 12px;text-align:left;font-size:10px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--br);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:background .1s;cursor:pointer}
+tbody tr:hover td{background:#FAFAF9}
+tbody tr.vencendo td{background:rgba(250,174,58,.05)}
+tbody tr.vencida td{background:rgba(226,75,74,.04)}
+.nc{font-weight:500;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cc{font-family:'DM Mono',monospace;font-size:11px;color:var(--mu)}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500;white-space:nowrap}
+.b-aprovado{background:var(--gp);color:#3B6D11}
+.b-analise{background:var(--bb);color:var(--bt)}
+.b-pendente{background:var(--ab);color:var(--at)}
+.b-negado{background:var(--rb);color:var(--rt)}
+.rp{display:inline-flex;width:26px;height:26px;align-items:center;justify-content:center;border-radius:7px;font-weight:600;font-size:12px}
+.r-A{background:var(--gp);color:#3B6D11}
+.r-B{background:var(--bb);color:var(--bt)}
+.r-C{background:var(--ab);color:var(--at)}
+.r-D{background:var(--rb);color:var(--rt)}
+.r-x{background:#F1EFE8;color:var(--fa)}
+.dr{display:flex;gap:3px;align-items:center}
+.dd{width:9px;height:9px;border-radius:2px;background:#E8E6DF}
+.dd.ok{background:var(--gm)}
+.dd.pend{background:#EF9F27}
+.dw{color:var(--at);font-weight:500}
+.do{color:var(--rt);font-weight:500}
+.csim{color:#1D9E75;font-weight:600;font-size:11px}
+.cnao{color:var(--fa);font-size:11px}
+.bi{width:28px;height:28px;border:none;background:none;border-radius:6px;cursor:pointer;color:var(--fa);font-size:14px;display:flex;align-items:center;justify-content:center}
+.bi:hover{background:var(--bg);color:var(--tx)}
+.bi.del:hover{background:var(--rb);color:var(--rt)}
+.er td{text-align:center;padding:3rem;color:var(--fa);font-size:13px}
+.lding{text-align:center;padding:3rem;color:var(--fa);font-size:13px}
+.spn{display:inline-block;width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;z-index:200;padding:2rem 1rem;overflow-y:auto}
+.ov.open{display:flex}
+.md{background:var(--sf);border-radius:14px;width:640px;max-width:100%;padding:1.75rem;box-shadow:0 20px 60px rgba(0,0,0,.2);margin:auto}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.mt{font-size:16px;font-weight:600}
+.mcl{width:30px;height:30px;border:none;background:var(--bg);border-radius:8px;cursor:pointer;font-size:16px;color:var(--mu);display:flex;align-items:center;justify-content:center}
+
+/* FORM */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg .full{grid-column:1/-1}
+.fgrp{display:flex;flex-direction:column;gap:5px}
+.fgrp label{font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:5px}
+.tag{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600;text-transform:uppercase}
+.tf{background:#FFF0C0;color:#7A5800}
+.tb2{background:var(--gp);color:var(--gd)}
+.fgrp input,.fgrp select,.fgrp textarea{height:38px;border:1px solid var(--bm);border-radius:8px;padding:0 10px;font-family:inherit;font-size:13px;background:var(--sf);color:var(--tx);outline:none}
+.fgrp input:focus,.fgrp select:focus,.fgrp textarea:focus{border-color:var(--gm)}
+.fgrp textarea{height:72px;padding:8px 10px;resize:none}
+.fgrp input:disabled,.fgrp select:disabled,.fgrp textarea:disabled{background:#F5F4F0;color:var(--fa);cursor:not-allowed;border-color:var(--br)}
+.sd{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--fa);margin:.25rem 0 0;padding-bottom:6px;border-bottom:1px solid var(--br);grid-column:1/-1}
+
+/* DOCS */
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dck{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:7px 10px;border:1px solid var(--br);border-radius:8px;user-select:none}
+.dck:hover:not(.dis){border-color:var(--gm);background:var(--gp)}
+.dck.dis{opacity:.5;cursor:not-allowed}
+.dck input{accent-color:var(--gm);width:15px;height:15px;cursor:pointer}
+
+/* ANEXOS */
+.al{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.ai{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border:1px solid var(--br);border-radius:8px;font-size:12px}
+.an{color:var(--bt);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:360px}
+.an:hover{text-decoration:underline}
+.ad{background:none;border:none;cursor:pointer;color:var(--fa);font-size:13px;padding:2px 6px;border-radius:4px}
+.ad:hover{color:var(--rt);background:var(--rb)}
+.ubtn{height:36px;padding:0 14px;border:1px dashed var(--bm);border-radius:8px;background:none;font-family:inherit;font-size:12px;color:var(--mu);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;margin-top:4px}
+.ubtn:hover{border-color:var(--gm);color:var(--gd);background:var(--gp)}
+.upr{font-size:11px;color:var(--mu);margin-top:4px}
+
+/* RATING REF */
+.rref{background:#FAFAF8;border:1px solid var(--br);border-radius:8px;padding:10px 14px;font-size:11px;grid-column:1/-1}
+.rrt{font-weight:600;margin-bottom:6px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;font-size:10px}
+.rrw{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.rr{padding:6px 8px;border-radius:6px}
+.rr.A{background:var(--gp)} .rr.B{background:var(--bb)} .rr.C{background:var(--ab)} .rr.D{background:var(--rb)}
+.rrl{font-weight:700;font-size:13px}
+.rrr{font-size:10px;color:var(--mu)}
+.rrn{font-size:10px;font-weight:500}
+
+/* FOOTER */
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--br)}
+.bcl{height:36px;padding:0 14px;border:1px solid var(--bm);border-radius:8px;background:none;font-family:inherit;font-size:13px;cursor:pointer;color:var(--mu)}
+.bsv{height:36px;padding:0 18px;background:var(--gd);color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.bsv:hover{background:#0a3d2b}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:#1A1A1A;color:white;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;transform:translateY(60px);opacity:0;transition:all .25s;pointer-events:none}
+#toast.show{transform:translateY(0);opacity:1}
+
+@media(max-width:768px){.mx{grid-template-columns:1fr 1fr}.ct{padding:1rem}header{padding:0 1rem}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="lw" id="loginWrap">
+  <div class="lc">
+    <div class="ll">
+      <div class="llm">L</div>
+      <div class="llt">Lev B2B · Crédito</div>
+    </div>
+    <p class="ls">Selecione seu perfil para continuar</p>
+    <div class="pb">
+      <button class="pbtn active" id="pbB2B" onclick="selPerfil('b2b')">🏍️ Time B2B</button>
+      <button class="pbtn" id="pbFin" onclick="selPerfil('fin')">💼 Financeiro</button>
+    </div>
+    <div class="lf">
+      <label>Senha</label>
+      <input type="password" id="loginSenha" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <div class="lerr" id="loginErr"></div>
+    <button class="lbln" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appWrap" style="display:none">
+<header>
+  <div class="logo"><div class="lmk">L</div>Lev B2B · Crédito</div>
+  <div class="hr">
+    <span class="pbadge" id="perfilBadge"></span>
+    <button class="blg" onclick="doLogout()">Sair</button>
+  </div>
+</header>
+
+<div class="ct">
+
+  <!-- LIMITE GLOBAL -->
+  <div class="lg">
+    <div>
+      <div class="lgl">Limite Global B2B</div>
+      <div class="lgv">
+        <div class="lgi"><div class="lgn" id="lgD" style="color:#1D9E75">—</div><div class="lgs">disponível</div></div>
+        <div class="lgi"><div class="lgn" id="lgU" style="color:#BA7517">—</div><div class="lgs">utilizado (vendas)</div></div>
+        <div class="lgi"><div class="lgn" style="color:var(--fa)">R$ 1.300.000</div><div class="lgs">total</div></div>
+      </div>
+    </div>
+    <div class="lgbw">
+      <div class="lgl">Utilização</div>
+      <div class="lgbt"><div class="lgbf" id="lgBar" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--fa);margin-top:3px" id="lgPct">0%</div>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="mx" id="metrics">
+    <div class="mc neutral"><div class="ml">Parceiros</div><div class="mv">—</div></div>
+    <div class="mc"><div class="ml">Aprovados</div><div class="mv">—</div></div>
+    <div class="mc warn"><div class="ml">Em análise</div><div class="mv">—</div></div>
+    <div class="mc danger"><div class="ml">Revisões</div><div class="mv">—</div></div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="tb">
+    <div class="sw">
+      <span class="si">⌕</span>
+      <input type="text" id="search" placeholder="Buscar por nome ou CNPJ…" oninput="render()" />
+    </div>
+    <select id="filtStatus" onchange="render()">
+      <option value="">Todos os status</option>
+      <option>Aprovado</option><option>Em análise</option><option>Pendente</option><option>Negado</option>
+    </select>
+    <select id="filtConsultor" onchange="render()">
+      <option value="">Todos consultores</option>
+      <option>Leonardo</option><option>Thadeu</option><option>Fábio</option>
+      <option>Peterson</option><option>Marcela</option><option>Wanielle</option>
+    </select>
+    <button class="bs" onclick="gerarPDF()">⬇ Relatório PDF</button>
+    <button class="bp" onclick="openModal()">+ Novo parceiro</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="tc">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:17%">Empresa</th>
+          <th style="width:12%">CNPJ</th>
+          <th style="width:9%">Consultor</th>
+          <th style="width:10%">Status</th>
+          <th style="width:6%">Rating</th>
+          <th style="width:10%">Limite</th>
+          <th style="width:8%">1º Pedido</th>
+          <th style="width:8%">Revisão</th>
+          <th style="width:7%">Conversão</th>
+          <th style="width:6%" title="Contrato / Balanço / CNPJ / CND">Docs</th>
+          <th style="width:5%">Analista</th>
+          <th style="width:4%"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="12" class="lding"><div class="spn"></div><br>Carregando…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="ov" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="md">
+    <div class="mh">
+      <span class="mt" id="mTitle">Novo parceiro</span>
+      <button class="mcl" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="fg">
+      <!-- B2B -->
+      <div class="sd">📋 Dados do Parceiro — Time B2B</div>
+      <div class="fgrp full"><label>Razão Social * <span class="tag tb2">B2B</span></label><input id="f-nome" type="text" placeholder="Nome completo da empresa" /></div>
+      <div class="fgrp"><label>CNPJ <span class="tag tb2">B2B</span></label><input id="f-cnpj" type="text" placeholder="00.000.000/0001-00" /></div>
+      <div class="fgrp"><label>Consultor B2B <span class="tag tb2">B2B</span></label>
+        <select id="f-consultor">
+          <option>Leonardo</option><option>Thadeu</option><option>Fábio</option>
+          <option>Peterson</option><option>Marcela</option><option>Wanielle</option>
+        </select>
+      </div>
+      <div class="fgrp full"><label>Observações — Time B2B <span class="tag tb2">B2B</span></label>
+        <textarea id="f-obs-b2b" placeholder="Contexto do parceiro, como foi o contato, interesse demonstrado…"></textarea>
+      </div>
+
+      <!-- DOCS B2B -->
+      <div class="sd">📎 Documentação Enviada — Time B2B</div>
+      <div class="fgrp full">
+        <div class="dg">
+          <label class="dck" id="dck-contrato"><input type="checkbox" id="d-contrato" /> Contrato Social</label>
+          <label class="dck" id="dck-balanco"><input type="checkbox" id="d-balanco" /> Balanço Patrimonial</label>
+          <label class="dck" id="dck-cnpj"><input type="checkbox" id="d-cnpj" /> Cartão CNPJ</label>
+          <label class="dck" id="dck-cnd"><input type="checkbox" id="d-cnd" /> Certidão Negativa de Débitos</label>
+        </div>
+      </div>
+
+      <!-- ANEXOS -->
+      <div class="sd">🗂 Anexos (PNG, JPG, PDF)</div>
+      <div class="fgrp full">
+        <div class="al" id="anexosList"></div>
+        <button class="ubtn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">＋ Adicionar arquivo</button>
+        <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.pdf" style="display:none" onchange="handleUpload(event)" multiple />
+        <div class="upr" id="uploadProg"></div>
+      </div>
+
+      <!-- FINANCEIRO -->
+      <div class="sd">💼 Análise de Crédito — Financeiro</div>
+      <div class="fgrp"><label>Status <span class="tag tf">FIN</span></label>
+        <select id="f-status"><option>Em análise</option><option>Pendente</option><option>Aprovado</option><option>Negado</option></select>
+      </div>
+      <div class="fgrp"><label>Analista Responsável <span class="tag tf">FIN</span></label>
+        <select id="f-analista"><option value="">— selecione —</option><option>Douglas</option><option>Allana</option><option>Taiz</option><option>Júlio</option></select>
+      </div>
+      <div class="fgrp"><label>Score de Crédito (0–1000) <span class="tag tf">FIN</span></label>
+        <input id="f-score" type="number" min="0" max="1000" placeholder="ex: 750" oninput="autoRating()" />
+      </div>
+      <div class="fgrp"><label>Rating <span class="tag tf">FIN</span></label>
+        <select id="f-rating"><option value="">— pelo score —</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
+      </div>
+
+      <div class="rref">
+        <div class="rrt">Tabela de Rating</div>
+        <div class="rrw">
+          <div class="rr A"><div class="rrl">A</div><div class="rrr">800–1000</div><div class="rrn">Baixo Risco</div></div>
+          <div class="rr B"><div class="rrl">B</div><div class="rrr">600–799</div><div class="rrn">Médio Risco</div></div>
+          <div class="rr C"><div class="rrl">C</div><div class="rrr">400–599</div><div class="rrn">Alto Risco</div></div>
+          <div class="rr D"><div class="rrl">D</div><div class="rrr">&lt; 400</div><div class="rrn">Restrito · À vista</div></div>
+        </div>
+      </div>
+
+      <div class="fgrp"><label>Limite Aprovado (R$) <span class="tag tf">FIN</span></label>
+        <input id="f-limite" type="number" min="0" placeholder="0" />
+      </div>
+      <div class="fgrp"><label>Prazo de Revisão <span class="tag tf">FIN</span></label>
+        <select id="f-prazo"><option value="30">30 dias</option><option value="60">60 dias</option><option value="90" selected>90 dias</option><option value="180">180 dias</option><option value="365">365 dias</option></select>
+      </div>
+      <div class="fgrp"><label>1º Pedido Realizado <span class="tag tf">FIN</span></label>
+        <input id="f-pedido" type="date" />
+      </div>
+      <div class="fgrp"><label>Conversão Pós-Análise <span class="tag tf">FIN</span></label>
+        <select id="f-conversao"><option value="">— pendente —</option><option value="sim">✅ Sim — Venda realizada</option><option value="nao">❌ Não</option></select>
+      </div>
+      <div class="fgrp full"><label>Observações — Financeiro <span class="tag tf">FIN</span></label>
+        <textarea id="f-obs-fin" placeholder="Notas internas do financeiro sobre a análise, restrições, condições especiais…"></textarea>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:var(--fa);margin-top:1rem">📅 Data de registro: <span id="f-datareg">—</span></div>
+
+    <div class="mf">
+      <button class="bcl" onclick="closeModal()">Cancelar</button>
+      <button class="bsv" id="btnSave" onclick="saveModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SB_URL='https://anjcuhrbambdvgenknzk.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamN1aHJiYW1iZHZnZW5rbnprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMjA1MzUsImV4cCI6MjA5NTg5NjUzNX0.KW42pQzmxNCamVAhaOu5fprvnv9woVE5qxffJVrykZo';
+const API=`${SB_URL}/rest/v1/parceiros`;
+const HDR={'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=representation'};
+const LIMIT_GLOBAL=1300000;
+const SENHAS={b2b:'levb2b2026',fin:'levfin2026'};
+const DK=['contrato','balanco','cnpj','cnd'];
+const DL=['Contrato Social','Balanço Patrimonial','Cartão CNPJ','CND'];
+
+let data=[],editId=null,perfil=null,pending=[],existing=[];
+let selP='b2b';
+
+function selPerfil(p){selP=p;document.getElementById('pbB2B').classList.toggle('active',p==='b2b');document.getElementById('pbFin').classList.toggle('active',p==='fin')}
+function doLogin(){
+  const s=document.getElementById('loginSenha').value;
+  if(s===SENHAS[selP]){
+    perfil=selP;
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('appWrap').style.display='block';
+    const b=document.getElementById('perfilBadge');
+    b.textContent=perfil==='fin'?'💼 Financeiro':'🏍️ Time B2B';
+    b.className='pbadge '+perfil;
+    fetchData();
+  } else {
+    document.getElementById('loginErr').textContent='Senha incorreta.';
+    setTimeout(()=>document.getElementById('loginErr').textContent='',2500);
+  }
+}
+function doLogout(){perfil=null;document.getElementById('appWrap').style.display='none';document.getElementById('loginWrap').style.display='flex';document.getElementById('loginSenha').value=''}
+
+async function fetchData(){
+  try{const r=await fetch(`${API}?order=created_at.desc`,{headers:HDR});data=await r.json();if(!Array.isArray(data))data=[];render()}
+  catch(e){toast('Erro ao carregar dados.',true)}
+}
+
+function fbrl(v){if(!v)return'—';return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}).format(v)}
+function fd(d){if(!d)return'—';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`}
+function td0(){const d=new Date();d.setHours(0,0,0,0);return d}
+function diff(ds){if(!ds)return null;return Math.round((new Date(ds+'T00:00:00')-td0())/86400000)}
+function s2r(s){if(s===''||s==null)return'';const n=parseInt(s);return n>=800?'A':n>=600?'B':n>=400?'C':'D'}
+function autoRating(){document.getElementById('f-rating').value=s2r(document.getElementById('f-score').value)}
+function revDate(p){const d=new Date();d.setDate(d.getDate()+parseInt(p||90));return d.toISOString().split('T')[0]}
+
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const fs=document.getElementById('filtStatus').value;
+  const fc=document.getElementById('filtConsultor').value;
+  let rows=data.filter(r=>{
+    if(q&&!r.nome?.toLowerCase().includes(q)&&!r.cnpj?.toLowerCase().includes(q))return false;
+    if(fs&&r.status!==fs)return false;
+    if(fc&&r.consultor!==fc)return false;
+    return true;
+  });
+  const tb=document.getElementById('tbody');
+  if(!rows.length){tb.innerHTML=`<tr class="er"><td colspan="12">Nenhum parceiro encontrado.</td></tr>`;
+  } else {
+    tb.innerHTML=rows.map(r=>{
+      const dv=diff(r.revisao);
+      const cls=dv!==null&&dv<0?'vencida':dv!==null&&dv<=7?'vencendo':'';
+      const rt=r.revisao?(dv<0?`<span class="do">⚠ ${fd(r.revisao)}</span>`:dv<=7?`<span class="dw">⚑ ${fd(r.revisao)}</span>`:fd(r.revisao)):'—';
+      const docs=r.docs||{};
+      const cv=r.conversao==='sim'?'<span class="csim">✅ Sim</span>':r.conversao==='nao'?'<span class="cnao">Não</span>':'<span style="color:var(--fa);font-size:11px">—</span>';
+      return`<tr class="${cls}" onclick="openEdit('${r.id}')">
+        <td><div class="nc">${r.nome||'—'}</div></td>
+        <td><div class="cc">${r.cnpj||'—'}</div></td>
+        <td style="font-size:12px">${r.consultor||'—'}</td>
+        <td>${bst(r.status)}</td>
+        <td>${rp(r.rating)}</td>
+        <td style="font-size:12px">${fbrl(r.limite)}</td>
+        <td style="font-size:12px">${fd(r.primeiro_pedido)}</td>
+        <td style="font-size:12px">${rt}</td>
+        <td>${cv}</td>
+        <td>${db(docs)}</td>
+        <td style="font-size:11px;color:var(--mu)">${r.analista||'—'}</td>
+        <td><button class="bi del" onclick="delRow(event,'${r.id}')" title="Remover">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+  const tot=data.length,apr=data.filter(r=>r.status==='Aprovado').length;
+  const anl=data.filter(r=>r.status==='Em análise'||r.status==='Pendente').length;
+  const alt=data.filter(r=>{const d=diff(r.revisao);return d!==null&&d<=7}).length;
+  document.getElementById('metrics').innerHTML=`
+    <div class="mc neutral"><div class="ml">Parceiros</div><div class="mv">${tot}</div><div class="ms">canal B2B</div></div>
+    <div class="mc"><div class="ml">Aprovados</div><div class="mv" style="color:#1D9E75">${apr}</div><div class="ms">crédito liberado</div></div>
+    <div class="mc warn"><div class="ml">Em análise</div><div class="mv" style="color:#BA7517">${anl}</div><div class="ms">aguardando FIN</div></div>
+    <div class="mc danger"><div class="ml">Revisões próximas</div><div class="mv" style="color:#A32D2D">${alt}</div><div class="ms">≤7 dias ou vencidas</div></div>
+  `;
+  const util=data.filter(r=>r.conversao==='sim').reduce((s,r)=>s+(r.limite||0),0);
+  const disp=LIMIT_GLOBAL-util;
+  const pct=Math.min(100,Math.round(util/LIMIT_GLOBAL*100));
+  document.getElementById('lgU').textContent=fbrl(util);
+  document.getElementById('lgD').textContent=fbrl(disp);
+  document.getElementById('lgBar').style.width=pct+'%';
+  document.getElementById('lgBar').style.background=pct>80?'#E24B4A':pct>50?'#EF9F27':'#1D9E75';
+  document.getElementById('lgPct').textContent=pct+'% utilizado';
+}
+
+function bst(s){const m={Aprovado:'aprovado','Em análise':'analise',Pendente:'pendente',Negado:'negado'};return`<span class="badge b-${m[s]||'pendente'}">${s||'—'}</span>`}
+function rp(r){return r?`<span class="rp r-${r}">${r}</span>`:`<span class="rp r-x">—</span>`}
+function db(docs){return`<div class="dr" title="${DK.map((k,i)=>DL[i]+': '+(docs[k]?'✓':'✗')).join(' | ')}">${DK.map(k=>`<div class="dd ${docs[k]?'ok':'pend'}"></div>`).join('')}</div>`}
+
+function isFin(){return perfil==='fin'}
+
+function setFin(on){
+  ['f-status','f-analista','f-score','f-rating','f-limite','f-prazo','f-pedido','f-conversao','f-obs-fin'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=!on});
+  DK.forEach(k=>{const el=document.getElementById('dck-'+k);if(el)el.classList.toggle('dis',!on);const inp=document.getElementById('d-'+k);if(inp)inp.disabled=!on});
+  document.getElementById('uploadBtn').style.display=on?'flex':'none';
+}
+
+function openModal(pf){
+  editId=pf?.id||null;pending=[];existing=Array.isArray(pf?.anexos)?[...pf.anexos]:[];
+  document.getElementById('mTitle').textContent=editId?'Editar parceiro':'Novo parceiro';
+  document.getElementById('f-nome').value=pf?.nome||'';
+  document.getElementById('f-cnpj').value=pf?.cnpj||'';
+  document.getElementById('f-consultor').value=pf?.consultor||'Leonardo';
+  document.getElementById('f-obs-b2b').value=pf?.obs_b2b||'';
+  document.getElementById('f-status').value=pf?.status||'Em análise';
+  document.getElementById('f-analista').value=pf?.analista||'';
+  document.getElementById('f-score').value=pf?.score||'';
+  document.getElementById('f-rating').value=pf?.rating||'';
+  document.getElementById('f-limite').value=pf?.limite||'';
+  document.getElementById('f-prazo').value=pf?.prazo||'90';
+  document.getElementById('f-pedido').value=pf?.primeiro_pedido||'';
+  document.getElementById('f-conversao').value=pf?.conversao||'';
+  document.getElementById('f-obs-fin').value=pf?.obs_fin||'';
+  DK.forEach(k=>{document.getElementById('d-'+k).checked=(pf?.docs||{})[k]||false});
+  document.getElementById('f-datareg').textContent=pf?.created_at?new Date(pf.created_at).toLocaleString('pt-BR'):new Date().toLocaleString('pt-BR');
+  renderAnexos();
+  setFin(isFin());
+  document.getElementById('overlay').classList.add('open');
+}
+function openEdit(id){const r=data.find(x=>x.id===id);if(r)openModal(r)}
+function closeModal(){document.getElementById('overlay').classList.remove('open');pending=[];existing=[]}
+
+function renderAnexos(){
+  const list=document.getElementById('anexosList');
+  const all=[...existing,...pending.map(p=>({nome:p.name,url:null}))];
+  if(!all.length){list.innerHTML='<div style="font-size:12px;color:var(--fa)">Nenhum anexo ainda.</div>';return}
+  list.innerHTML=all.map((a,i)=>`
+    <div class="ai">
+      ${a.url?`<a class="an" href="${a.url}" target="_blank">📄 ${a.nome}</a>`:`<span class="an" style="color:var(--mu)">📄 ${a.nome} <span style="color:#BA7517;font-size:10px">(aguardando salvar)</span></span>`}
+      ${isFin()?`<button class="ad" onclick="rmAnexo(${i},'${a.url||''}')">✕</button>`:''}
+    </div>`).join('');
+}
+function handleUpload(e){if(!isFin())return;Array.from(e.target.files).forEach(f=>pending.push({file:f,name:f.name}));renderAnexos();e.target.value=''}
+async function uploadAnexos(pid){
+  const urls=[...existing];
+  for(const p of pending){
+    const path=`${pid}/${Date.now()}_${p.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+    const r=await fetch(`${SB_URL}/storage/v1/object/documentos/${path}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':p.file.type},body:p.file});
+    if(r.ok)urls.push({nome:p.name,url:`${SB_URL}/storage/v1/object/public/documentos/${path}`});
+  }
+  return urls;
+}
+function rmAnexo(i){const t=existing.length;if(i<t)existing.splice(i,1);else pending.splice(i-t,1);renderAnexos()}
+
+async function saveModal(){
+  const nome=document.getElementById('f-nome').value.trim();
+  if(!nome){alert('Informe a razão social.');return}
+  const btn=document.getElementById('btnSave');
+  btn.textContent='Salvando…';btn.disabled=true;
+  try{
+    let anexos=existing;
+    if(pending.length>0){document.getElementById('uploadProg').textContent='Enviando arquivos…';anexos=await uploadAnexos(editId||crypto.randomUUID());document.getElementById('uploadProg').textContent=''}
+    const prazo=parseInt(document.getElementById('f-prazo').value||'90');
+    const pl={
+      nome,
+      cnpj:document.getElementById('f-cnpj').value.trim()||null,
+      consultor:document.getElementById('f-consultor').value,
+      obs_b2b:document.getElementById('f-obs-b2b').value.trim()||null,
+    };
+    if(isFin()){
+      pl.status=document.getElementById('f-status').value;
+      pl.analista=document.getElementById('f-analista').value||null;
+      pl.score=parseInt(document.getElementById('f-score').value)||null;
+      pl.rating=document.getElementById('f-rating').value||null;
+      pl.limite=parseFloat(document.getElementById('f-limite').value)||0;
+      pl.prazo=prazo;
+      pl.revisao=revDate(prazo);
+      pl.primeiro_pedido=document.getElementById('f-pedido').value||null;
+      pl.conversao=document.getElementById('f-conversao').value||null;
+      pl.obs_fin=document.getElementById('f-obs-fin').value.trim()||null;
+      pl.docs=Object.fromEntries(DK.map(k=>[k,document.getElementById('d-'+k).checked]));
+      pl.anexos=anexos;
+    }
+    if(editId){
+      await fetch(`${API}?id=eq.${editId}`,{method:'PATCH',headers:HDR,body:JSON.stringify(pl)});
+      toast('Parceiro atualizado ✓');
+    } else {
+      if(!isFin())pl.status='Em análise';
+      await fetch(API,{method:'POST',headers:HDR,body:JSON.stringify(pl)});
+      toast('Parceiro cadastrado ✓');
+    }
+    closeModal();await fetchData();
+  } catch(e){toast('Erro ao salvar.',true);}
+  finally{btn.textContent='Salvar';btn.disabled=false}
+}
+
+async function delRow(e,id){
+  e.stopPropagation();
+  if(!confirm('Remover este parceiro?'))return;
+  await fetch(`${API}?id=eq.${id}`,{method:'DELETE',headers:HDR});
+  toast('Parceiro removido.');await fetchData();
+}
+
+function gerarPDF(){
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  const util=data.filter(r=>r.conversao==='sim').reduce((s,r)=>s+(r.limite||0),0);
+  const disp=LIMIT_GLOBAL-util;
+  const linhas=data.map(r=>`<tr><td>${r.nome||'—'}</td><td style="font-family:monospace;font-size:10px">${r.cnpj||'—'}</td><td>${r.consultor||'—'}</td><td>${r.status||'—'}</td><td>${r.rating||'—'}</td><td>${r.score||'—'}</td><td>${r.limite?'R$ '+new Intl.NumberFormat('pt-BR').format(r.limite):'—'}</td><td>${r.revisao?r.revisao.split('-').reverse().join('/'):'—'}</td><td>${r.conversao==='sim'?'Sim':r.conversao==='nao'?'Não':'—'}</td><td>${r.analista||'—'}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório B2B Lev</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:2rem;color:#1A1A1A}h1{color:#0F5A3F;font-size:18px;margin-bottom:4px}.sub{color:#888;font-size:12px;margin-bottom:1.5rem}.cards{display:flex;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap}.card{border:1px solid #ddd;border-radius:8px;padding:10px 14px;min-width:130px}.cl{font-size:10px;color:#888;text-transform:uppercase}.cv{font-size:18px;font-weight:700;margin-top:2px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#0F5A3F;color:white;padding:6px 8px;text-align:left;font-size:10px}td{padding:5px 8px;border-bottom:1px solid #eee}tr:nth-child(even) td{background:#F9F9F7}.ft{margin-top:2rem;font-size:10px;color:#aaa;text-align:center}</style></head><body>
+  <h1>Relatório Comercial B2B — Lev</h1><div class="sub">Gerado em ${hoje}</div>
+  <div class="cards">
+    <div class="card"><div class="cl">Total Parceiros</div><div class="cv">${data.length}</div></div>
+    <div class="card"><div class="cl">Aprovados</div><div class="cv" style="color:#1D9E75">${data.filter(r=>r.status==='Aprovado').length}</div></div>
+    <div class="card"><div class="cl">Em análise</div><div class="cv" style="color:#BA7517">${data.filter(r=>r.status==='Em análise'||r.status==='Pendente').length}</div></div>
+    <div class="card"><div class="cl">Limite utilizado</div><div class="cv" style="color:#A32D2D">R$ ${new Intl.NumberFormat('pt-BR').format(util)}</div></div>
+    <div class="card"><div class="cl">Limite disponível</div><div class="cv" style="color:#1D9E75">R$ ${new Intl.NumberFormat('pt-BR').format(disp)}</div></div>
+  </div>
+  <table><thead><tr><th>Empresa</th><th>CNPJ</th><th>Consultor</th><th>Status</th><th>Rating</th><th>Score</th><th>Limite</th><th>Revisão</th><th>Conversão</th><th>Analista</th></tr></thead><tbody>${linhas}</tbody></table>
+  <div class="ft">Lev B2B · Sistema de Análise de Crédito · ${hoje}</div></body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.print(),600);
+}
+
+function toast(msg,err){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.style.background=err?'#A32D2D':'#1A1A1A';t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
